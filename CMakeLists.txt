@@ -78,6 +78,10 @@ file(GLOB_RECURSE SOURCE_FILES
   ${SRC_SOURCE_DIR}/*.cpp
   ${SRC_SOURCE_DIR}/*.c
 )
+
+# additional libs
+list(APPEND LIBs pthread)
+
 list(APPEND HEADER_DIRs ${SRC_SOURCE_DIR}/include)
 link_directories(${LIB_DIRs})
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
