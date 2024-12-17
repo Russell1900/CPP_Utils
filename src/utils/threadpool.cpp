@@ -1,4 +1,4 @@
-#include "threadpool.h"
+#include "utils/threadpool.h"
 #include "spdlog/spdlog.h"
 
 ThreadPool::ThreadPool(unsigned int worker_num)
@@ -23,6 +23,8 @@ ThreadPool::ThreadPool(unsigned int worker_num)
   _finished_task_num.store(0);
   spdlog::info("thread pool inited, worker number: {}.", _worker_num.load());
 }
+
+ThreadPool::~ThreadPool() {}
 
 void ThreadPool::_worker() {
   try {
@@ -57,10 +59,12 @@ void ThreadPool::_worker() {
   }
 }
 
-bool ThreadPool::shutdown(bool now) {
+void ThreadPool::shutdown(bool now) {
   if (_status == ThreadPool::Status::CLOSED) {
     spdlog::error("thread pool is already closed.");
-    return false;
+    return;
+  } else if (_status == ThreadPool::Status::SHUTING_DOWN) {
+    return;
   }
   if (now) {
     _shutdown_now = true;
@@ -69,7 +73,7 @@ bool ThreadPool::shutdown(bool now) {
   }
   _status.store(ThreadPool::Status::SHUTING_DOWN);
   _cv.notify_all();
-  return true;
+  join();
 }
 
 unsigned int ThreadPool::join() {

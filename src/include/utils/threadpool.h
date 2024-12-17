@@ -4,7 +4,6 @@
 #include <condition_variable>
 #include <functional>
 #include <future>
-#include <iostream>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -14,7 +13,12 @@ using namespace std;
 class ThreadPool {
 public:
   typedef enum Status { RUNNING = 0, SHUTING_DOWN, CLOSED } status;
+
   ThreadPool(unsigned int worker_num);
+  ~ThreadPool();
+
+  void shutdown(bool now = false);
+
   template <typename F, typename... Args>
   shared_ptr<future<typename result_of<F(Args...)>::type>>
   submit(F &&f, Args &&...args) {
@@ -34,8 +38,6 @@ public:
     }
     return make_shared<future<return_type>>(::std::move(task->get_future()));
   }
-  bool shutdown(bool now = false);
-  unsigned int join();
 
 private:
   atomic<unsigned int> _worker_num;
@@ -51,4 +53,5 @@ private:
   atomic<unsigned int> _finished_task_num;
 
   void _worker();
+  unsigned int join();
 };
